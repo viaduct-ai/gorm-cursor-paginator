@@ -233,7 +233,7 @@ func (p *Paginator) appendPagingQuery(db *gorm.DB, fields []interface{}) *gorm.D
 	}
 
 	if p.allowTupleCmp && p.canOptimizePagingQuery() {
-		return stmt.Where(p.buildOptimizedCursorSQLQuery(), fields...)
+		return stmt.Where(p.buildOptimizedCursorSQLQuery(), fields)
 	}
 
 	return stmt.Where(
@@ -292,18 +292,15 @@ func (p *Paginator) getCmpOperator(order Order) string {
 
 func (p *Paginator) buildOptimizedCursorSQLQuery() string {
 	names := make([]string, len(p.rules))
-	values := make([]string, len(p.rules))
 
 	for i, rule := range p.rules {
 		names[i] = rule.SQLRepr
-		values[i] = "?"
 	}
 
 	return fmt.Sprintf(
-		"(%s) %s (%s)",
+		"(%s) %s ?",
 		strings.Join(names, ", "),
 		p.getCmpOperator(p.rules[0].Order),
-		strings.Join(values, ", "),
 	)
 }
 
